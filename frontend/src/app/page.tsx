@@ -44,22 +44,41 @@ React.useEffect(() => {
     setShowDatePicker(false);
   }
 }, [selectedOption]);
+const [activeTab, setActiveTab] = React.useState('sales');
 const [location, setLocation] = useState<string | null>(null);
 return (
   <div>
     <PageTitle title="Dashboard" className="mb-4" />
 
     <Tabs>
-      <TabsList>
-        <TabsTrigger value="sales"> Sales Insight </TabsTrigger>
-        <TabsTrigger value="staff"> Staff Insight </TabsTrigger>
-        <TabsTrigger value="customer"> Customer Insight </TabsTrigger>
-      </TabsList>
+<TabsList>
+  <TabsTrigger 
+    value="sales" 
+    style={{backgroundColor: activeTab === 'sales' ? '#fbd137' : ''}}
+    onClick={() => setActiveTab('sales')}
+  >
+    Sales Insight
+  </TabsTrigger>
+  <TabsTrigger 
+    value="staff" 
+    style={{backgroundColor: activeTab === 'staff' ? '#fbd137' : ''}}
+    onClick={() => setActiveTab('staff')}
+  >
+    Staff Insight
+  </TabsTrigger>
+  <TabsTrigger 
+    value="customer" 
+    style={{backgroundColor: activeTab === 'customer' ? '#fbd137' : ''}}
+    onClick={() => setActiveTab('customer')}
+  >
+    Customer Insight
+  </TabsTrigger>
+</TabsList>
 
       <TabsContent value="sales">
         {/* Content for Sales Insight */}
         <div className="flex space-x-4">
-          <div className="w-60">
+          <div className="w-80">
             <ReactSelect
               options={[
                 { value: 'Mancave_nsk', label: 'Mancave NSK' },
@@ -128,11 +147,15 @@ return (
                 menu: (styles) => ({
                   ...styles,
                   borderRadius:'14px',
-                  padding:'6px'
+                  padding:'6px',
+                  fontSize: '0.8rem', // reduce text size
+                  width: '235px', // reduce menu width
+                  height: '300px',
                 }),
                 option: (styles, { isFocused }) => {
                   return {
                   ...styles,
+                  fontSize: '0.8rem',
                   backgroundColor: isFocused 
                     ? '#fbd137' // color for the highlighted option
                     : undefined,
