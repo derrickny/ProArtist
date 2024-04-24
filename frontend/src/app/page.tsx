@@ -65,6 +65,7 @@ return (
                 { value: 'Mancave_nsk', label: 'Mancave NSK' },
                 { value: 'Mancave_kitengela', label: 'Mancave Kitengela' },
               ]}
+              defaultValue={{ value: 'Mancave_nsk', label: 'Mancave NSK' }} 
               onChange={(option: OptionType | null) => {
                 if (option) {
                   setLocation(option.value);
@@ -107,6 +108,7 @@ return (
                 { value: 'last_30_days', label: 'Last 30 Days' },
                 { value: 'custom', label: 'Custom Range' },
                 ]}
+                defaultValue={{ value: 'today', label: 'Today' }}
                 onChange={(option: OptionType | null) => {
                 if (option) {
                   setSelectedOption(option.value);
