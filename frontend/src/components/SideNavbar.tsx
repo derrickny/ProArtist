@@ -1,36 +1,52 @@
-import exp from 'constants';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Nav } from './ui/nav';
 
 type props = { }
+
 import {
-    AlertCircle,
-    Archive,
-    ArchiveX,
-    BarChartBig,
-    ChevronLeft,
-    ChevronRight,
-    ClipboardCheck,
-    ClipboardPenLine,
-    Cog,
-    File,
-    Gauge,
-    Handshake,
-    Inbox,
-    LayoutDashboard,
-    MessagesSquare,
-    Search,
-    Send,
-    ShoppingBag,
-    ShoppingCart,
-    Trash2,
-    Users2,
-    UsersRound,
-  } from "lucide-react"
+  AlertCircle,
+  Archive,
+  ArchiveX,
+  BarChartBig,
+  ChevronLeft,
+  ChevronRight,
+  ClipboardCheck,
+  ClipboardPenLine,
+  Cog,
+  File,
+  Gauge,
+  Handshake,
+  Inbox,
+  LayoutDashboard,
+  MessagesSquare,
+  Search,
+  ShoppingBag,
+  UsersRound,
+} from "lucide-react";
+
 import { Button } from './ui/button';
+// Debounced values
+import {
+  useWindowSize,
+  useWindowWidth,
+  useWindowHeight,
+} from '@react-hook/window-size'
+
 
 export default function SideNavbar({}: props) {
 const [isCollapsed, setIsCollapsed] = useState(false)
+const onlyWidth = useWindowWidth()
+// const [onlyWidth, setOnlyWidth] = useState(0) // Initialize onlyWidth with 0
+
+// useEffect(() => {
+//   // Ensure window object is defined
+//   if (typeof window !== 'undefined') {
+//     setOnlyWidth(window.innerWidth) // Set onlyWidth to window's innerWidth
+//   }
+// }, [])
+
+
+const mobilewidth = onlyWidth < 768
 
 function toggleCollapseSideBar(){
     setIsCollapsed(!isCollapsed)
@@ -41,16 +57,19 @@ function toggleCollapseSideBar(){
 
     return (
       <div className='relative min-w-[100px] border-r px-10 pb-20 pt-24'>
-        <div className='absolute right-[-20px] top-7'>
-        <Button 
-        onClick={toggleCollapseSideBar} 
-        variant='secondary' 
-        className='rounded-full p-2'>
-        {isCollapsed ? <ChevronRight/> : <ChevronLeft/>} 
-        </Button>
-        </div>
+        {!mobilewidth && (
+          <div className='absolute right-[-20px] top-7'>
+            <Button 
+              onClick={toggleCollapseSideBar} 
+              variant='secondary' 
+              className='rounded-full p-2'
+            >
+              {isCollapsed ? <ChevronRight/> : <ChevronLeft/>} 
+            </Button>
+          </div>
+        )}
         <Nav
-          isCollapsed={isCollapsed}
+          isCollapsed={mobilewidth ? true : isCollapsed}
           links={[
             {
               title: "Dashboard",
