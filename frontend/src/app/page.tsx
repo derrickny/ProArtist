@@ -22,11 +22,85 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import ReactSelect, { ActionMeta } from 'react-select';
 import  { useState } from 'react';
+import Card, { CardProps } from "@/components/card";
 
 type OptionType = {
   label: string;
   value: string;
 };
+import {
+  Wallet,
+  DollarSign,
+  CreditCard,
+  Activity,
+  Receipt,
+  HandCoins,
+  FileX,
+  Gem,
+  WalletCards
+}
+from "lucide-react"
+
+
+const CardData: CardProps[] = [
+  {
+    label: "Bill Count",
+    icon: Wallet,
+    amount: "385",
+    description: "Total number of bills",
+  },
+  {
+    label: "Total Bill Count",
+    icon: DollarSign,
+    amount: "Ksh 100,000",
+    description: "The amount collected, apart from the redemption amount, staff tips and unpaid value.",
+  },
+  {
+    label: "Average Bill Value",
+    icon: Activity,
+    amount: "Ksh 1,300",
+    description: "The average value of a bill.",
+  },
+  {
+    label: "Total Expenses Value",
+    icon: CreditCard,
+    amount: "Ksh 0",
+    description: "The total value of expenses.",
+  },
+  {
+    label: "Cancelled Bill Count",
+    icon: FileX,
+    amount: "8",
+    description: "The number of bills that were cancelled.",
+  },
+  {
+    label: "Cancelled Bill Value",
+    icon: Receipt,
+    amount: "Ksh 100,000",
+    description: "The total value of cancelled bills.",
+  },
+  {
+    label: "Staff Tips Value", 
+    icon: HandCoins,
+    amount: "Ksh 11,500",
+    description: "The total value of staff tips.",
+  },
+  {
+    label: "Unpaid Value",
+    icon: WalletCards,
+    amount: "Ksh 500",
+    description: "The total value of unpaid bills.",
+  },
+  {
+    label: "Rewards Points Value",
+    icon: Gem,
+    amount: "Ksh 0",
+    description: "The total value of rewards points.",
+  },
+  
+
+]
+
 
 export default function Home() {
 
@@ -51,34 +125,34 @@ return (
     <PageTitle title="Dashboard" className="mb-4" />
 
     <Tabs>
-<TabsList>
-  <TabsTrigger 
-    value="sales" 
-    style={{backgroundColor: activeTab === 'sales' ? '#fbd137' : ''}}
-    onClick={() => setActiveTab('sales')}
-  >
-    Sales Insight
-  </TabsTrigger>
-  <TabsTrigger 
-    value="staff" 
-    style={{backgroundColor: activeTab === 'staff' ? '#fbd137' : ''}}
-    onClick={() => setActiveTab('staff')}
-  >
-    Staff Insight
-  </TabsTrigger>
-  <TabsTrigger 
-    value="customer" 
-    style={{backgroundColor: activeTab === 'customer' ? '#fbd137' : ''}}
-    onClick={() => setActiveTab('customer')}
-  >
-    Customer Insight
-  </TabsTrigger>
-</TabsList>
+      <TabsList>
+        <TabsTrigger 
+          value="sales" 
+          style={{backgroundColor: activeTab === 'sales' ? '#fbd137' : ''}}
+          onClick={() => setActiveTab('sales')}
+        >
+          Sales Insight
+        </TabsTrigger>
+        <TabsTrigger 
+          value="staff" 
+          style={{backgroundColor: activeTab === 'staff' ? '#fbd137' : ''}}
+          onClick={() => setActiveTab('staff')}
+        >
+          Staff Insight
+        </TabsTrigger>
+        <TabsTrigger 
+          value="customer" 
+          style={{backgroundColor: activeTab === 'customer' ? '#fbd137' : ''}}
+          onClick={() => setActiveTab('customer')}
+        >
+          Customer Insight
+        </TabsTrigger>
+      </TabsList>
 
       <TabsContent value="sales">
         {/* Content for Sales Insight */}
-        <div className="flex space-x-4">
-          <div className="w-80">
+        <div className="flex space-x-4 mb-4" >
+          <div className="w-80" >
             <ReactSelect
               options={[
                 { value: 'Mancave_nsk', label: 'Mancave NSK' },
@@ -90,8 +164,8 @@ return (
                   setLocation(option.value);
                   // Fetch new data and update your cards and graphs here
                 }
-                }}
-                styles={{
+              }}
+              styles={{
                 control: (styles) => ({
                   ...styles,
                   borderRadius:'14px'
@@ -100,25 +174,24 @@ return (
                   ...styles,
                   borderRadius:'14px',
                   padding:'6px'
-                  
                 }),
                 option: (styles, { isFocused }) => {
                   return {
-                  ...styles,
-                  backgroundColor: isFocused 
-                    ? '#fbd137' // color for the highlighted option
-                    : undefined,
-                  color: 'black',
-                  borderRadius:'15px',
-                  padding:'10px',
+                    ...styles,
+                    backgroundColor: isFocused 
+                      ? '#fbd137' // color for the highlighted option
+                      : undefined,
+                    color: 'black',
+                    borderRadius:'15px',
+                    padding:'10px',
                   };
                 },
-                }}
-              />
-              </div>
-              <div className="w-60">
-              <ReactSelect
-                options={[
+              }}
+            />
+          </div>
+          <div className="w-60">
+            <ReactSelect
+              options={[
                 { value: 'today', label: 'Today' },
                 { value: 'yesterday', label: 'Yesterday' },
                 { value: 'current_month', label: 'Current Month' },
@@ -126,9 +199,9 @@ return (
                 { value: 'last_14_days', label: 'Last 14 Days' },
                 { value: 'last_30_days', label: 'Last 30 Days' },
                 { value: 'custom', label: 'Custom Range' },
-                ]}
-                defaultValue={{ value: 'today', label: 'Today' }}
-                onChange={(option: OptionType | null) => {
+              ]}
+              defaultValue={{ value: 'today', label: 'Today' }}
+              onChange={(option: OptionType | null) => {
                 if (option) {
                   setSelectedOption(option.value);
                   if (option.value === 'custom') {
@@ -142,7 +215,6 @@ return (
                 control: (styles) => ({
                   ...styles,
                   borderRadius:'14px'
-
                 }),
                 menu: (styles) => ({
                   ...styles,
@@ -154,14 +226,14 @@ return (
                 }),
                 option: (styles, { isFocused }) => {
                   return {
-                  ...styles,
-                  fontSize: '0.8rem',
-                  backgroundColor: isFocused 
-                    ? '#fbd137' // color for the highlighted option
-                    : undefined,
-                  color: 'black',
-                  borderRadius:'15px',
-                  padding:'10px',
+                    ...styles,
+                    fontSize: '0.8rem',
+                    backgroundColor: isFocused 
+                      ? '#fbd137' // color for the highlighted option
+                      : undefined,
+                    color: 'black',
+                    borderRadius:'15px',
+                    padding:'10px',
                   };
                 }
               }}
@@ -209,6 +281,18 @@ return (
             </div>
           )}
         </div>
+        <section className="grid w-full grid-cols-1 gap-4 gap-x-8 transition-all
+        sm:grid-cols-2 xl:grid-cols-4">
+          {CardData.map((d, i) => ( 
+            <Card
+              key={i}
+              label={d.label}
+              icon={d.icon}
+              amount={d.amount}
+              description={d.description}
+            />
+          ))}
+        </section>
       </TabsContent>
       <TabsContent value="staff">
         <div>
