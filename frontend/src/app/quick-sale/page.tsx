@@ -1,11 +1,13 @@
 import React from 'react';
+import Checkout from '@/components/checkout';
+//import CardContent from '@/components/CardContent';
 
-type props = { }
+type Props = { }
 
-export default function QuickSale({}: props) {
+export default function QuickSale({}: Props) {
     return (
         <div>
-            QuickSale
+            <Checkout/>
         </div>
     )
 }

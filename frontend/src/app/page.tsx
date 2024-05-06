@@ -22,7 +22,7 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import ReactSelect, { ActionMeta } from 'react-select';
 import  { useState } from 'react';
-import Card, { CardProps } from "@/components/card";
+import Card, { CardContent, CardProps } from "@/components/card";
 
 type OptionType = {
   label: string;
@@ -221,7 +221,7 @@ return (
                   borderRadius:'14px',
                   padding:'6px',
                   fontSize: '0.8rem', // reduce text size
-                  width: '235px', // reduce menu width
+                  width: '236px', // reduce menu width
                   height: '300px',
                 }),
                 option: (styles, { isFocused }) => {
@@ -292,6 +292,12 @@ return (
               description={d.description}
             />
           ))}
+        </section>
+        <section>
+          {/* Add your graphs and charts here */}
+          <CardContent>
+            <p className="p-4 font-semibold"></p>
+          </CardContent>
         </section>
       </TabsContent>
       <TabsContent value="staff">
