@@ -37,7 +37,8 @@ import {
   HandCoins,
   FileX,
   Gem,
-  WalletCards
+  WalletCards,
+  LineChart,
 }
 from "lucide-react"
 

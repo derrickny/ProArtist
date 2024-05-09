@@ -18,6 +18,7 @@ import {
   Handshake,
   Inbox,
   LayoutDashboard,
+  LineChart,
   MessagesSquare,
   Search,
   ShoppingBag,
@@ -76,6 +77,12 @@ function toggleCollapseSideBar(){
               href: "/",
               icon: LayoutDashboard,
               variant: "default",
+            },
+            {
+              title: "Business Insights",
+              href: "/business-insights",
+              icon: LineChart,
+              variant: "ghost",
             },
             {
               title: "Quick Sale",
