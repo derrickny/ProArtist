@@ -78,7 +78,7 @@ const handleReset = (event: React.MouseEvent<HTMLButtonElement>) => {
 };
 
   return (
-    <Card className="overflow-hidden w-1/3 h-auto ml-auto">
+   <Card className="overflow-hidden w-80 h-auto mx-auto lg:mr-0 lg:ml-auto">
       <CardHeader className="flex flex-row items-start bg-muted/50">
         <div className="grid gap-0.5">
           <CardTitle className="group flex items-center gap-2 text-lg">
