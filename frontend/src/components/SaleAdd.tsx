@@ -80,7 +80,7 @@ export default function SaleAdd({ className }: SaleAddProps) {
     ];
 
     return (
-        <Card className={`${className} overflow-hidden overflow-x-auto w-full sm:w-3/4 md:w-1/2 lg:w-3/5 mx-auto lg:mr-0 lg:ml-auto`}>
+<Card className={`${className} overflow-hidden overflow-x-auto overflow-y-auto h-[71vh] w-full sm:w-3/4 md:w-1/2 lg:w-3/5 mx-auto lg:mr-0 lg:ml-auto`}>
             <CardHeader className='bg-muted/50'>
                 <CardTitle>Customer Sale Particulars</CardTitle>
             </CardHeader>

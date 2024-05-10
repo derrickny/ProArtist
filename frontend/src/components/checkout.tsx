@@ -82,7 +82,7 @@ const handleReset = (event: React.MouseEvent<HTMLButtonElement>) => {
 };
 
   return (
-    <Card className={`${className} overflow-hidden w-full sm:w-3/4 md:w-1/2 lg:w-1/3 mx-auto lg:mr-0 lg:ml-auto`}>
+    <Card className={`${className} flex flex-col overflow-hidden w-full sm:w-3/4 md:w-1/2 lg:w-1/3 mx-auto lg:mr-0 lg:ml-auto`}>
       <CardHeader className="flex flex-row items-start bg-muted/50">
         <div className="grid gap-0.5">
           <CardTitle className="group flex items-center gap-2 text-lg">
@@ -167,12 +167,14 @@ const handleReset = (event: React.MouseEvent<HTMLButtonElement>) => {
           </div>
         </div>
       </CardContent>
-<CardFooter className="flex flex-row items-center justify-between border-t bg-muted px-6 py-3">
-  <div>
-    <Button onClick={handleReset} className="mr-2 border border-gray-300" variant="secondary">Reset</Button>
-    <Button onClick={handleCheckout} >Checkout</Button>
-  </div>
-</CardFooter>
+<div className="bg-muted flex-grow">
+  <CardFooter className="flex flex-row items-center justify-between border-t px-6 py-3">
+    <div>
+      <Button onClick={handleReset} className="mr-2 border border-gray-300" variant="secondary">Reset</Button>
+      <Button onClick={handleCheckout} >Checkout</Button>
+    </div>
+  </CardFooter>
+</div>
     </Card>
   );
 }
