@@ -55,7 +55,11 @@ import { Input } from "@/components/ui/input";
 
 import { Separator } from "@/components/ui/separator";
 
-export default function Component() {
+type checkout = {
+  className?: string;
+};
+
+export default function Component({ className }: checkout){
 
 const handleAddTip = (event: React.MouseEvent<HTMLButtonElement>) => {
   console.log('Add Tip');
@@ -78,7 +82,7 @@ const handleReset = (event: React.MouseEvent<HTMLButtonElement>) => {
 };
 
   return (
-   <Card className="overflow-hidden w-80 h-auto mx-auto lg:mr-0 lg:ml-auto">
+    <Card className={`${className} overflow-hidden w-full sm:w-3/4 md:w-1/2 lg:w-1/3 mx-auto lg:mr-0 lg:ml-auto`}>
       <CardHeader className="flex flex-row items-start bg-muted/50">
         <div className="grid gap-0.5">
           <CardTitle className="group flex items-center gap-2 text-lg">
