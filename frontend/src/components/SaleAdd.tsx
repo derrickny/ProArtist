@@ -77,7 +77,7 @@ export default function SaleAdd({ className }: SaleAddProps) {
     const serviceOptions = [
         { value: 'gentlemens-cut', label: 'Gentlemen\'s Cut' },
         { value: 'bespoke-cut', label: 'Bespoke Cut' },
-    ];
+    ]; 
 
     return (
 <Card className={`${className} overflow-hidden overflow-x-auto overflow-y-auto h-[71vh] w-full sm:w-3/4 md:w-1/2 lg:w-3/5 mx-auto lg:mr-0 lg:ml-auto`}>
