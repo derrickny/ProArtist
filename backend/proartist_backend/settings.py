@@ -135,6 +135,6 @@ AUTH_USER_MODEL = 'artist.User'
 CORS_ORIGIN_ALLOW_ALL = False
 CORS_ORIGIN_WHITELIST = [
     "http://localhost:3000",
-    'http://localhost:3001',
-    
+    "http://localhost:3001",
+    "https://pro-artist-rho.vercel.app",  # Removed trailing slash
 ]

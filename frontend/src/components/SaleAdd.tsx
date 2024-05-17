@@ -240,20 +240,20 @@ const handleStaffChange = (selectedStaff: SelectOption | null, itemId: string) =
                                                     <Label htmlFor={`${item.type}-type`} className='text-sm'>{item.type.charAt(0).toUpperCase() + item.type.slice(1)}</Label>
                                                     <Select
                                                         id={`${item.type}-type`}
-                                                        className="w-100"
+                                                        className="w-full text-s"
                                                         options={serviceOptions}
                                                         onChange={(selectedService: SelectOption | null) => handleServiceChange(selectedService, item.id)}
                                                     />
                                                 </div>
-                                                <div className="flex flex-col gap-1">
-                                                    <Label htmlFor={`${item.type}-staff`} className='text-sm'>Staff</Label>
-                                                    <Select
-    id={`${item.type}-staff`}
-    className="w-20"
-    options={staff}
-    onChange={(selectedStaff: SelectOption | null) => handleStaffChange(selectedStaff, item.id)}
-/>
-                                                </div>
+<div className="flex flex-col gap-1">
+    <Label htmlFor={`${item.type}-staff`} className='text-sm'>Staff</Label>
+    <Select
+        id={`${item.type}-staff`}
+        className="w-full text-s" // Increase the width to 40
+        options={staff}
+        onChange={(selectedStaff: SelectOption | null) => handleStaffChange(selectedStaff, item.id)}
+    />
+</div>
                                                 {item.type !== 'prepaid' && (
                                                     <div className="flex flex-col gap-1">
                                                         <Label htmlFor={`${item.type}-quantity`} className='text-sm'>Qty.</Label>
