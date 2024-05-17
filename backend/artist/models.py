@@ -42,7 +42,7 @@ class Sales(models.Model):
 class SaleItem(models.Model):
     sale_id = models.CharField(max_length=20, unique=True)
     date = models.DateField(auto_now_add=True)
-    customer = models.ForeignKey('Customer', on_delete=models.CASCADE)
+    customer_mobile = models.CharField(max_length=20, blank=True, null=True)
     service = models.ForeignKey('Services', on_delete=models.SET_NULL, null=True)
     user = models.ForeignKey('User', on_delete=models.SET_NULL, null=True)
     quantity = models.IntegerField()
