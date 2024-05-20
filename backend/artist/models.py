@@ -11,14 +11,22 @@ class User(AbstractUser):
     mobile = models.CharField(max_length=20, blank=True, null=True)
 
 class Customer(models.Model):
-    name = models.CharField(max_length=255)
+    first_name = models.CharField(max_length=255)
+    last_name = models.CharField(max_length=255, blank=True, null=True)
     email = models.EmailField(unique=True)
     mobile = models.CharField(max_length=20)
+    location = models.ForeignKey('Location', on_delete=models.SET_NULL,null=True)
     total_visits = models.IntegerField(default=0)
     total_spent = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     last_visit_date = models.DateField(null=True, blank=True)
-
-
+    
+    def save(self, *args, **kwargs):
+        # Trim spaces and convert to uppercase
+        self.first_name = self.first_name.strip().upper()
+        self.last_name = self.last_name.strip().upper() if self.last_name else self.last_name
+        self.email = self.email.strip().lower()
+        self.mobile = self.mobile.strip()
+        super(Customer, self).save(*args, **kwargs)
 
 class Services(models.Model):
     name = models.CharField(max_length=255)
@@ -28,39 +36,52 @@ class Services(models.Model):
 
 class Products(models.Model):
     name = models.CharField(max_length=255)
-    description = models.TextField()
+    description = models.TextField(null=True, blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     stock_quantity = models.IntegerField()
     location = models.ForeignKey('Location', on_delete=models.SET_NULL, null=True)
 
-class Sales(models.Model):
-    customer = models.ForeignKey('Customer', on_delete=models.CASCADE)
-    location = models.ForeignKey('Location', on_delete=models.CASCADE)
-    date = models.DateField()
-    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
-
-class SaleItem(models.Model):
+class Sale(models.Model):
+    """
+    Sale model.
+    """
     sale_id = models.CharField(max_length=20, unique=True)
     date = models.DateField(auto_now_add=True)
-    customer_mobile = models.CharField(max_length=20, blank=True, null=True)
-    service = models.ForeignKey('Services', on_delete=models.SET_NULL, null=True)
+    customer = models.ForeignKey('Customer', on_delete=models.SET_NULL, null=True)
     user = models.ForeignKey('User', on_delete=models.SET_NULL, null=True)
+    tip = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    card_payment = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    mpesa_payment = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    
+    @property
+    def grand_total(self):
+        total = sum(item.total_price for item in self.saleitem_set.all())
+        return total + self.tip
+
+
+class SaleItem(models.Model):
+    """
+    SaleItem model.
+    """
+    sale = models.ForeignKey('Sale', on_delete=models.CASCADE,null=True)
+    service = models.ForeignKey('Services', on_delete=models.SET_NULL, null=True)
+    product = models.ForeignKey('Products', on_delete=models.SET_NULL, null=True)
     quantity = models.IntegerField()
     price_per_unit = models.DecimalField(max_digits=10, decimal_places=2)
     discount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
-    tip = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    card_payment = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    mpesa_payment = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
     @property
     def sub_total(self):
-        return self.quantity * self.price_per_unit
+        """
+        Calculate the subtotal of the sale item.
+        The subtotal is the quantity times the price per unit minus the discount.
+        """
+        return self.quantity * self.price_per_unit - self.discount
 
-    @property
-    def grand_total(self):
-        return self.sub_total - self.discount + self.tip
-    
+    def save(self, *args, **kwargs):
+        self.total_price = self.sub_total
+        super().save(*args, **kwargs)
 
 class Appointments(models.Model):
     STATUS_CHOICES = [('Scheduled', 'Scheduled'), ('Completed', 'Completed'), ('Cancelled', 'Cancelled'), ('No Show', 'No Show')]

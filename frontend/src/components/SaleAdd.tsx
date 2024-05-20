@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import Select from 'react-select';
 import {
@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 
 import {
+    SearchIcon,
     Trash2
 }
 from 'lucide-react'
@@ -19,6 +20,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import axios from 'axios';
 import { Button } from './ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+  } from "@/components/ui/dialog";
+
+import { debounce } from 'lodash';
+import { Value } from '@radix-ui/react-select';
 
 interface Country {
     alpha2Code: string;
@@ -36,6 +48,8 @@ interface SelectOption {
 type SaleAddProps = {
     className?: string;
 };
+
+
 
 export default function SaleAdd({ className }: SaleAddProps) {
     const [countryCodes, setCountryCodes] = useState<SelectOption[]>([]);
@@ -167,9 +181,181 @@ const handleStaffChange = (selectedStaff: SelectOption | null, itemId: string) =
     ));
 };
 
+//products
+const [products, setProducts] = useState<SelectOption[]>([]);
+
+useEffect(() => {
+    const fetchProducts = async () => {
+        try {
+            const response = await axios.get('http://127.0.0.1:8000/products');
+            const productOptions = response.data.map((product: { id: string, name: string, price: number }) => ({
+                value: product.id,
+                label: product.name,
+                price: product.price
+            }));
+            setProducts(productOptions);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    fetchProducts();
+}, []);
+
+const handleProductChange = (selectedProduct: SelectOption | null, itemId: string) => {
+    setItems(prevItems => prevItems.map(item => 
+        item.id === itemId ? { ...item, price: selectedProduct?.price || 0, total: calculateTotal(selectedProduct?.price || 0, item.discount, item.quantity) } : item
+    ));
+};
+
+
+// Customer
+
+
+
+// State and handlers for search term
+const [searchTerm, setSearchTerm] = useState('');
+// State and handlers for search results
+const [searchResults, setSearchResults] = useState<any[]>([]);
+
+// State and handlers for selected customer
+const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
+
+// State and handlers for add customer dialog
+const [showAddCustomerDialog, setShowAddCustomerDialog] = useState(false);
+
+// State for search completed
+const [searchCompleted, setSearchCompleted] = useState(false);
+
+// Function to search for a customer
+const searchCustomer = useCallback(async () => {
+    if (searchTerm.trim() !== '') {
+        try {
+            const response = await axios.get(`http://127.0.0.1:8000/customers/?search=${searchTerm}`);
+            setSearchCompleted(true); // Set search as completed
+            if (response.data.length > 0) {
+                setSearchResults(response.data);
+            } else {
+                setSearchResults([]);
+            }
+        } catch (error) {
+            console.error('Error searching for customer:', error);
+            setSearchResults([]); // Clear results on error
+            setSearchCompleted(true); // Set search as completed
+        }
+    } else {
+        setSearchResults([]);
+        setSearchCompleted(false); // Reset the search state
+    }
+}, [searchTerm]);
+
+// Debounce the search function
+const debouncedSearch = useCallback(debounce(() => searchCustomer(), 500), [searchTerm, searchCustomer]);
+
+const handleSearchTermChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = event.target;
+    setSearchTerm(value);
+    debouncedSearch();
+};
+
+const renderSearchResults = () => {
+    if (searchResults.length > 0) {
+        return (
+            <ul className="absolute bg-white border border-gray-300 w-30 mt-1 rounded-md z-10">
+                {searchResults.map(customer => (
+                    <li key={customer.id} className="p-2 hover:bg-gray-100 cursor-pointer" onClick={() => handleResultClick(customer)}>
+                        {customer.mobile} - {customer.first_name} {customer.last_name}
+                    </li>
+                ))}
+            </ul>
+        );
+    } else if (searchTerm !== '' && searchCompleted && searchResults.length === 0) {
+        // Show "Add Customer" button only if the search term is non-empty, search is completed, and no results are found
+        return (
+            <div className="mt-2">
+                <Button onClick={() => setShowAddCustomerDialog(true)}>
+                    Add Customer
+                </Button>
+            </div>
+        );
+    }
+    return null; // Return null if none of the conditions are met
+};
+
+const handleResultClick = (customer: any) => {
+    setSelectedCustomer(customer);
+    setSearchTerm(customer.mobile.startsWith('0') ? customer.mobile.substring(1) : customer.mobile); // Adjust phone number format
+    setSearchResults([]); // Clear the dropdown
+};
+
+
+
+
+
+// State and handlers for new customer fields
+const [firstName, setFirstName] = useState('');
+const [lastName, setLastName] = useState('');
+const [email, setEmail] = useState('');
+const [location, setLocation] = useState('');
+
+
+// State and handlers for new customer object
+const [newCustomer, setNewCustomer] = useState({
+    first_name: '',
+    last_name: '',
+    email: '',
+    mobile: '',
+    location: ''
+});
+
+
+
+// Function to add a new customer
+const addCustomer = async () => {
+    try {
+        // Retrieve the Location instance
+        const locationResponse = await axios.get(`http://127.0.0.1:8000/locations/?name=${encodeURIComponent(newCustomer.location)}`);
+        if (locationResponse.data.length === 0) {
+            throw new Error('Location not found');
+        }
+        const locationInstance = locationResponse.data[0];
+
+        console.log('locationInstance:', locationInstance); // Log the locationInstance
+
+        // Check if locationInstance is not undefined
+        if (!locationInstance) {
+            throw new Error('Invalid location');
+        }
+
+        // Create the new Customer
+        const response = await axios.post('http://127.0.0.1:8000/customers/', {
+            first_name: newCustomer.first_name,
+            last_name: newCustomer.last_name,
+            email: newCustomer.email,
+            mobile: newCustomer.mobile,
+            location: locationInstance.id // Assign the Location instance's id
+        });
+        setSelectedCustomer(response.data); // Update selectedCustomer state with the newly added customer
+        setShowAddCustomerDialog(false); // Close the dialog
+    } catch (error: any) {
+        if (error.response && error.response.status === 400) {
+            if (error.response.data.email) {
+                console.error('Error: This email is already in use.');
+            } else if (error.response.data.location) {
+                console.error('Error: Invalid location id.');
+            } else {
+                console.error('Error adding new customer:', error.response.data);
+            }
+        } else {
+            console.error('Error adding new customer:', error);
+        }
+    }
+};
+
+
 
     return (
-        <Card className={`${className} overflow-hidden overflow-x-auto overflow-y-auto h-[71vh] w-full sm:w-3/4 md:w-1/2 lg:w-3/5 mx-auto lg:mr-0 lg:ml-auto`}>
+        <Card className={`${className} overflow-hidden overflow-x-auto overflow-y-auto h-[71vh] w-full sm:w-3/4 md:w-1/2 lg:w-3/5 mx-auto lg:mr-0 lg:ml-auto lg:overflow-x-auto`}>
             <CardHeader className='bg-muted/50'>
                 <CardTitle>Sale Particulars</CardTitle>
             </CardHeader>
@@ -215,13 +401,25 @@ const handleStaffChange = (selectedStaff: SelectOption | null, itemId: string) =
                                     }),
                                 }}
                             />
-                            <Input
-                                id="phoneNumber"
-                                value={phoneNumber}
-                                onChange={handlePhoneNumberChange}
-                                placeholder="Enter phone number"
-                                className="w-1/2"
-                            />
+<div className="relative w-80">
+    <Input
+        id="searchTerm"
+        value={searchTerm}
+        onChange={handleSearchTermChange}
+        onKeyPress={(event) => {
+            if (event.key === 'Enter') {
+                searchCustomer();
+            }
+        }}
+        placeholder="Search by phone number/name/id"
+        className="pr-20" // Add padding to the right of the input to make room for the button
+    />
+    
+<Button onClick={searchCustomer} className="absolute right-2 top-1/2 transform -translate-y-1/2 px-2 py-1 h-8">Search</Button>
+    <div className="absolute w-full mt-1">
+        {renderSearchResults()}
+    </div>
+</div>
                         </div>
                     </div>
                     <div className="flex flex-col gap-3">
@@ -240,8 +438,8 @@ const handleStaffChange = (selectedStaff: SelectOption | null, itemId: string) =
                                                     <Label htmlFor={`${item.type}-type`} className='text-sm'>{item.type.charAt(0).toUpperCase() + item.type.slice(1)}</Label>
                                                     <Select
                                                         id={`${item.type}-type`}
-                                                        className="w-full text-s"
-                                                        options={serviceOptions}
+                                                        className="w-30 text-xs"
+                                                        options={item.type === 'product' ? products : serviceOptions}
                                                         onChange={(selectedService: SelectOption | null) => handleServiceChange(selectedService, item.id)}
                                                     />
                                                 </div>
@@ -249,7 +447,7 @@ const handleStaffChange = (selectedStaff: SelectOption | null, itemId: string) =
     <Label htmlFor={`${item.type}-staff`} className='text-sm'>Staff</Label>
     <Select
         id={`${item.type}-staff`}
-        className="w-full text-s" // Increase the width to 40
+        className="w-30 text-s" // Increase the width to 40
         options={staff}
         onChange={(selectedStaff: SelectOption | null) => handleStaffChange(selectedStaff, item.id)}
     />
@@ -319,6 +517,86 @@ const handleStaffChange = (selectedStaff: SelectOption | null, itemId: string) =
                                 <Button onClick={() => addItem('prepaid')}>Prepaid</Button>
                             </div>
                         </div>
+<Dialog open={showAddCustomerDialog} onOpenChange={setShowAddCustomerDialog}>
+    <DialogContent>
+        <DialogHeader>
+            <DialogTitle>Add New Customer</DialogTitle>
+        </DialogHeader>
+        <DialogDescription>
+            <div className="p-4">
+                <label>
+                    First Name
+                    <Input
+                        type="text"
+                        name="first_name"
+                        value={newCustomer.first_name}
+                        onChange={(e) => setNewCustomer({ ...newCustomer, first_name: e.target.value })}
+                        placeholder="First Name"
+                        className="mt-1 block w-full"
+                    />
+                </label>
+                <label className="mt-4">
+                    Last Name
+                    <Input
+                        type="text"
+                        name="last_name"
+                        value={newCustomer.last_name}
+                        onChange={(e) => setNewCustomer({ ...newCustomer, last_name: e.target.value })}
+                        placeholder="Last Name"
+                        className="mt-1 block w-full"
+                    />
+                </label>
+                <label className="mt-4">
+                    Email
+                    <Input
+                        type="email"
+                        name="email"
+                        value={newCustomer.email}
+                        onChange={(e) => setNewCustomer({ ...newCustomer, email: e.target.value })}
+                        placeholder="Email"
+                        className="mt-1 block w-full"
+                    />
+                </label>
+                <label className="mt-4">
+                    Mobile
+                    <Input
+                        type="text"
+                        name="mobile"
+                        value={newCustomer.mobile}
+                        onChange={(e) => setNewCustomer({ ...newCustomer, mobile: e.target.value })}
+                        placeholder="Mobile"
+                        className="mt-1 block w-full"
+                    />
+                </label>
+                <label className="mt-4">
+                    Location
+                    <select
+                        name="location"
+                        value={newCustomer.location}
+                        onChange={(e) => setNewCustomer({ ...newCustomer, location: e.target.value })}
+                        className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                    >
+                        <option value="">Select Location</option>
+                        <option value="Mancave NSK">Mancave NSK</option>
+                        <option value="Mancave Kitengela">Mancave Kitengela</option>
+                    </select>
+                </label>
+            </div>
+        </DialogDescription>
+        <div className="flex justify-end mt-4">
+            <Button variant="secondary" className="border border-gray-300" onClick={() => setShowAddCustomerDialog(false)}>
+                Cancel
+            </Button>
+            <Button
+                variant="default"
+                onClick={addCustomer}
+                className="ml-4"
+            >
+                Save
+            </Button>
+        </div>
+    </DialogContent>
+</Dialog>
                     </div>
                 </div>
             </CardContent>
