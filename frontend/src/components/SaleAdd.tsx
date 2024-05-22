@@ -18,7 +18,7 @@ from 'lucide-react'
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import axios from 'axios';
+import axios ,{CancelTokenSource}from 'axios';
 import { Button } from './ui/button';
 import {
     Dialog,
@@ -31,7 +31,7 @@ import {
 
 import { debounce } from 'lodash';
 import { Value } from '@radix-ui/react-select';
-
+import {useSale} from '@/context/SalesContext';
 interface Country {
     alpha2Code: string;
     name: string;
@@ -52,6 +52,7 @@ type SaleAddProps = {
 
 
 export default function SaleAdd({ className }: SaleAddProps) {
+    const { addSaleItem, setCustomer } = useSale();
     const [countryCodes, setCountryCodes] = useState<SelectOption[]>([]);
     const [selectedOption, setSelectedOption] = useState<SelectOption | null>(null);
     const [phoneNumber, setPhoneNumber] = useState<string>('');
@@ -85,6 +86,7 @@ export default function SaleAdd({ className }: SaleAddProps) {
 
     const addItem = (type: string) => {
         setItems([...items, { id: uuidv4(), type, service: '', staff: '', quantity: 1, price: 0, discount: 0, total: 0 }]);
+    
     };
 
     const removeItem = (id: string) => {
@@ -227,36 +229,70 @@ const [showAddCustomerDialog, setShowAddCustomerDialog] = useState(false);
 // State for search completed
 const [searchCompleted, setSearchCompleted] = useState(false);
 
+// State for customer exists
+const [customerExists, setCustomerExists] = useState(false);
+
+
+
+// Create an axios instance
+const axiosInstance = axios.create();
+
+let cancelTokenSource: CancelTokenSource | undefined;
+
 // Function to search for a customer
 const searchCustomer = useCallback(async () => {
     if (searchTerm.trim() !== '') {
+        // Cancel the previous request
+        if (cancelTokenSource) {
+            cancelTokenSource.cancel();
+        }
+
+        // Create a new CancelToken
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        cancelTokenSource = axios.CancelToken.source();
+
         try {
-            const response = await axios.get(`http://127.0.0.1:8000/customers/?search=${searchTerm}`);
+            const response = await axiosInstance.get(`http://127.0.0.1:8000/customers/?search=${searchTerm}`, {
+                cancelToken: cancelTokenSource.token
+            });
             setSearchCompleted(true); // Set search as completed
             if (response.data.length > 0) {
                 setSearchResults(response.data);
+                setCustomerExists(true);
             } else {
                 setSearchResults([]);
+                setCustomerExists(false);
             }
         } catch (error) {
-            console.error('Error searching for customer:', error);
-            setSearchResults([]); // Clear results on error
-            setSearchCompleted(true); // Set search as completed
+            if (axios.isCancel(error)) {
+                console.log('Request canceled', error.message);
+            } else {
+                console.error('Error searching for customer:', error);
+                setSearchResults([]); // Clear results on error
+                setSearchCompleted(true); // Set search as completed
+                setCustomerExists(false);
+            }
         }
     } else {
         setSearchResults([]);
         setSearchCompleted(false); // Reset the search state
+        setCustomerExists(false);
     }
-}, [searchTerm]);
+}, [searchTerm, axiosInstance]);
 
 // Debounce the search function
-const debouncedSearch = useCallback(debounce(() => searchCustomer(), 500), [searchTerm, searchCustomer]);
+const debouncedSearch = useCallback(() => {
+    const debounced = debounce(searchCustomer, 500);
+    debounced();
+}, [searchCustomer]); // Removed unnecessary dependency 'searchTerm'
 
 const handleSearchTermChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target;
     setSearchTerm(value);
     debouncedSearch();
 };
+
+
 
 const renderSearchResults = () => {
     if (searchResults.length > 0) {
@@ -269,8 +305,8 @@ const renderSearchResults = () => {
                 ))}
             </ul>
         );
-    } else if (searchTerm !== '' && searchCompleted && searchResults.length === 0) {
-        // Show "Add Customer" button only if the search term is non-empty, search is completed, and no results are found
+    } else if (searchTerm !== '' && searchCompleted && searchResults.length === 0 && !customerExists) {
+        // Show "Add Customer" button only if the search term is non-empty, search is completed, no results are found, and the customer does not exist
         return (
             <div className="mt-2">
                 <Button onClick={() => setShowAddCustomerDialog(true)}>
@@ -401,25 +437,25 @@ const addCustomer = async () => {
                                     }),
                                 }}
                             />
-<div className="relative w-80">
-    <Input
-        id="searchTerm"
-        value={searchTerm}
-        onChange={handleSearchTermChange}
-        onKeyPress={(event) => {
-            if (event.key === 'Enter') {
-                searchCustomer();
-            }
-        }}
-        placeholder="Search by phone number/name/id"
-        className="pr-20" // Add padding to the right of the input to make room for the button
-    />
+                            <div className="relative w-80">
+                                <Input
+                                    id="searchTerm"
+                                    value={searchTerm}
+                                    onChange={handleSearchTermChange}
+                                    onKeyPress={(event) => {
+                                        if (event.key === 'Enter') {
+                                            searchCustomer();
+                                        }
+                                    }}
+                                    placeholder="Search by phone number/name/id"
+                                    className="pr-20" // Add padding to the right of the input to make room for the button
+                                />
     
-<Button onClick={searchCustomer} className="absolute right-2 top-1/2 transform -translate-y-1/2 px-2 py-1 h-8">Search</Button>
-    <div className="absolute w-full mt-1">
-        {renderSearchResults()}
-    </div>
-</div>
+                            <Button onClick={searchCustomer} className="absolute right-2 top-1/2 transform -translate-y-1/2 px-2 py-1 h-8">Search</Button>
+                                <div className="absolute w-full mt-1">
+                                    {renderSearchResults()}
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div className="flex flex-col gap-3">
@@ -443,57 +479,57 @@ const addCustomer = async () => {
                                                         onChange={(selectedService: SelectOption | null) => handleServiceChange(selectedService, item.id)}
                                                     />
                                                 </div>
-<div className="flex flex-col gap-1">
-    <Label htmlFor={`${item.type}-staff`} className='text-sm'>Staff</Label>
-    <Select
-        id={`${item.type}-staff`}
-        className="w-30 text-s" // Increase the width to 40
-        options={staff}
-        onChange={(selectedStaff: SelectOption | null) => handleStaffChange(selectedStaff, item.id)}
-    />
-</div>
+                                                <div className="flex flex-col gap-1">
+                                                    <Label htmlFor={`${item.type}-staff`} className='text-sm'>Staff</Label>
+                                                    <Select
+                                                        id={`${item.type}-staff`}
+                                                        className="w-30 text-s" // Increase the width to 40
+                                                        options={staff}
+                                                        onChange={(selectedStaff: SelectOption | null) => handleStaffChange(selectedStaff, item.id)}
+                                                    />
+                                                </div>
                                                 {item.type !== 'prepaid' && (
                                                     <div className="flex flex-col gap-1">
                                                         <Label htmlFor={`${item.type}-quantity`} className='text-sm'>Qty.</Label>
                                                         <Input 
-    id={`${item.type}-quantity`} 
-    type="number" 
-    className="w-20" 
-    defaultValue={item.quantity}
-    onChange={(event) => handleQuantityChange(event, item.id)}
-/>
+                                                        id={`${item.type}-quantity`} 
+                                                        type="number" 
+                                                        className="w-20" 
+                                                        defaultValue={item.quantity}
+                                                        onChange={(event) => handleQuantityChange(event, item.id)}
+                                                    />
                                                     </div>
                                                 )}
                                                 <div className="flex flex-col gap-1">
                                                     <Label htmlFor={`${item.type}-price`} className='text-sm'>Price (Ksh)</Label>
-<Input 
-    id={`${item.type}-price`} 
-    type="number" 
-    className="w-20" 
-    value={item.price} 
-/>
-                                                </div>
+                                                <Input 
+                                                    id={`${item.type}-price`} 
+                                                    type="number" 
+                                                    className="w-20" 
+                                                    value={item.price} 
+                                                />
+                                              </div>
                                                 {item.type !== 'prepaid' && (
                                                     <div className="flex flex-col gap-1">
                                                         <Label htmlFor={`${item.type}-discount`} className='text-sm'>Disc (%)</Label>
                                                         <Input 
-    id={`${item.type}-discount`} 
-    type="number" 
-    className="w-20" 
-    onChange={(event) => handleDiscountChange(event, item.id)}
-/>
+                                                            id={`${item.type}-discount`} 
+                                                            type="number" 
+                                                            className="w-20" 
+                                                            onChange={(event) => handleDiscountChange(event, item.id)}
+                                                        />
                                                     </div>
                                                 )}
                                                 <div className="flex flex-col gap-1">
                                                     <Label htmlFor={`${item.type}-total`} className='text-sm'>Total</Label>
                                                     <div className="flex items-center gap-3">
                                                     <Input 
-    id={`${item.type}-total`} 
-    type="number" 
-    className="w-20" 
-    disabled 
-    value={item.total.toFixed(2)} 
-/>
+                                                            id={`${item.type}-total`} 
+                                                            type="number" 
+                                                            className="w-20" 
+                                                            disabled 
+                                                            value={item.total.toFixed(2)} 
+                                                        />
                                                         <Trash2 className='text-red-500' onClick={() => removeItem(item.id)} />
                                                     </div>
                                                 </div>
@@ -517,86 +553,86 @@ const addCustomer = async () => {
                                 <Button onClick={() => addItem('prepaid')}>Prepaid</Button>
                             </div>
                         </div>
-<Dialog open={showAddCustomerDialog} onOpenChange={setShowAddCustomerDialog}>
-    <DialogContent>
-        <DialogHeader>
-            <DialogTitle>Add New Customer</DialogTitle>
-        </DialogHeader>
-        <DialogDescription>
-            <div className="p-4">
-                <label>
-                    First Name
-                    <Input
-                        type="text"
-                        name="first_name"
-                        value={newCustomer.first_name}
-                        onChange={(e) => setNewCustomer({ ...newCustomer, first_name: e.target.value })}
-                        placeholder="First Name"
-                        className="mt-1 block w-full"
-                    />
-                </label>
-                <label className="mt-4">
-                    Last Name
-                    <Input
-                        type="text"
-                        name="last_name"
-                        value={newCustomer.last_name}
-                        onChange={(e) => setNewCustomer({ ...newCustomer, last_name: e.target.value })}
-                        placeholder="Last Name"
-                        className="mt-1 block w-full"
-                    />
-                </label>
-                <label className="mt-4">
-                    Email
-                    <Input
-                        type="email"
-                        name="email"
-                        value={newCustomer.email}
-                        onChange={(e) => setNewCustomer({ ...newCustomer, email: e.target.value })}
-                        placeholder="Email"
-                        className="mt-1 block w-full"
-                    />
-                </label>
-                <label className="mt-4">
-                    Mobile
-                    <Input
-                        type="text"
-                        name="mobile"
-                        value={newCustomer.mobile}
-                        onChange={(e) => setNewCustomer({ ...newCustomer, mobile: e.target.value })}
-                        placeholder="Mobile"
-                        className="mt-1 block w-full"
-                    />
-                </label>
-                <label className="mt-4">
-                    Location
-                    <select
-                        name="location"
-                        value={newCustomer.location}
-                        onChange={(e) => setNewCustomer({ ...newCustomer, location: e.target.value })}
-                        className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-                    >
-                        <option value="">Select Location</option>
-                        <option value="Mancave NSK">Mancave NSK</option>
-                        <option value="Mancave Kitengela">Mancave Kitengela</option>
-                    </select>
-                </label>
-            </div>
-        </DialogDescription>
-        <div className="flex justify-end mt-4">
-            <Button variant="secondary" className="border border-gray-300" onClick={() => setShowAddCustomerDialog(false)}>
-                Cancel
-            </Button>
-            <Button
-                variant="default"
-                onClick={addCustomer}
-                className="ml-4"
-            >
-                Save
-            </Button>
-        </div>
-    </DialogContent>
-</Dialog>
+                        <Dialog open={showAddCustomerDialog} onOpenChange={setShowAddCustomerDialog}>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>Add New Customer</DialogTitle>
+                                </DialogHeader>
+                                <DialogDescription>
+                                    <div className="p-4">
+                                        <label>
+                                            First Name
+                                            <Input
+                                                type="text"
+                                                name="first_name"
+                                                value={newCustomer.first_name}
+                                                onChange={(e) => setNewCustomer({ ...newCustomer, first_name: e.target.value })}
+                                                placeholder="First Name"
+                                                className="mt-1 block w-full"
+                                            />
+                                        </label>
+                                        <label className="mt-4">
+                                            Last Name
+                                            <Input
+                                                type="text"
+                                                name="last_name"
+                                                value={newCustomer.last_name}
+                                                onChange={(e) => setNewCustomer({ ...newCustomer, last_name: e.target.value })}
+                                                placeholder="Last Name"
+                                                className="mt-1 block w-full"
+                                            />
+                                        </label>
+                                        <label className="mt-4">
+                                            Email
+                                            <Input
+                                                type="email"
+                                                name="email"
+                                                value={newCustomer.email}
+                                                onChange={(e) => setNewCustomer({ ...newCustomer, email: e.target.value })}
+                                                placeholder="Email"
+                                                className="mt-1 block w-full"
+                                            />
+                                        </label>
+                                        <label className="mt-4">
+                                            Mobile
+                                            <Input
+                                                type="text"
+                                                name="mobile"
+                                                value={newCustomer.mobile}
+                                                onChange={(e) => setNewCustomer({ ...newCustomer, mobile: e.target.value })}
+                                                placeholder="Mobile"
+                                                className="mt-1 block w-full"
+                                            />
+                                        </label>
+                                        <label className="mt-4">
+                                            Location
+                                            <select
+                                                name="location"
+                                                value={newCustomer.location}
+                                                onChange={(e) => setNewCustomer({ ...newCustomer, location: e.target.value })}
+                                                className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                                            >
+                                                <option value="">Select Location</option>
+                                                <option value="Mancave NSK">Mancave NSK</option>
+                                                <option value="Mancave Kitengela">Mancave Kitengela</option>
+                                            </select>
+                                        </label>
+                                    </div>
+                                </DialogDescription>
+                                <div className="flex justify-end mt-4">
+                                    <Button variant="secondary" className="border border-gray-300" onClick={() => setShowAddCustomerDialog(false)}>
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        variant="default"
+                                        onClick={addCustomer}
+                                        className="ml-4"
+                                    >
+                                        Save
+                                    </Button>
+                                </div>
+                            </DialogContent>
+                        </Dialog>
                     </div>
                 </div>
             </CardContent>
