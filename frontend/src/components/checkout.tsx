@@ -1,5 +1,5 @@
 'use client';
-
+import React, { useContext,useEffect,useState } from 'react';
 import {
 SearchIcon
 }
@@ -58,12 +58,22 @@ import ClientButton from "@/components/ClientButton";
 import { Input } from "@/components/ui/input";
 
 import { Separator } from "@/components/ui/separator";
+import { SaleContext } from "@/context/SalesContext";
 
 type checkout = {
   className?: string;
 };
 
 export default function Component({ className }: checkout){
+
+    const context = useContext(SaleContext);
+
+    if (!context) {
+      throw new Error("Component must be used within a SaleProvider");
+    }
+
+    const { saleDetails } = context;
+    const total = saleDetails.total;
 
 const handleAddTip = (event: React.MouseEvent<HTMLButtonElement>) => {
   console.log('Add Tip');
@@ -85,6 +95,22 @@ const handleReset = (event: React.MouseEvent<HTMLButtonElement>) => {
   // Add your reset logic here
 };
 
+const [mpesaPayment, setMpesaPayment] = useState(0);
+const [cardPayment, setCardPayment] = useState(0);
+const [payableAmount, setPayableAmount] = useState(total);
+
+useEffect(() => {
+  setPayableAmount(total - mpesaPayment - cardPayment);
+}, [total, mpesaPayment, cardPayment]);
+
+const handleMpesaChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  setMpesaPayment(Number(event.target.value));
+};
+
+const handleCardChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  setCardPayment(Number(event.target.value));
+};
+
   return (
     <Card className={`${className} flex flex-col overflow-hidden w-full sm:w-3/4 md:w-1/2 lg:w-1/3 mx-auto lg:mr-0 lg:ml-auto`}>
       <CardHeader className="flex flex-row items-start bg-muted/50">
@@ -103,12 +129,12 @@ const handleReset = (event: React.MouseEvent<HTMLButtonElement>) => {
           <ul className="grid gap-3">
             <li className="flex items-center justify-between">
               <span className="text-muted-foreground">Sub Total:</span>
-              <span>$1,670.00</span>
+              <span className='text-sm'>Ksh {total}</span>
             </li>
-            <li className="flex items-center justify-between">
-              <span className="text-muted-foreground">Grand Total:</span>
-              <span>$1,670.00</span>
-            </li>
+                <li className="flex items-center justify-between">
+                    <span className="text-muted-foreground text">Grand Total:</span>
+                    <span className="font-bold text-lg"><span className="text-sm">Ksh</span> {total}</span>
+                </li>
             <Dialog>
               <DialogTrigger>
                 <div className="flex justify-start">
@@ -148,26 +174,26 @@ const handleReset = (event: React.MouseEvent<HTMLButtonElement>) => {
             </Dialog>
             <li className="flex items-center justify-between">
               <span className="text-muted-foreground">Change:</span>
-              <span>$0.00</span>
+              <span>KSH 0.00</span>
             </li>
             <li className="flex items-center justify-between border-t pt-3 " >
-              <span className="text-muted-foreground font-bold text-xl text-black ">Payable Amount:</span>
-              <span className="font-bold text-xl">$0.00</span>
-            </li>
+            <span className="text-muted-foreground font-bold text-xl text-black ">Payable Amount:</span>
+            <span className="font-bold text-xl"> Ksh {payableAmount.toFixed(2)}</span>
+          </li>
           </ul>
         </div>
         <Separator className="my-4" />
         <div className="grid gap-3">
           <div className="font-semibold text-lg">Payment Method</div>
           <div className="flex gap-3">
-            <div>
-              <span className="text-muted-foreground">Card</span>
-              <Input type="text" placeholder="Enter amount" className="mt-2" />
-            </div>
-            <div>
-              <span className="text-muted-foreground">Mpesa</span>
-              <Input type="text" placeholder="Enter amount" className="mt-2" />
-            </div>
+          <div>
+            <span className="text-muted-foreground">Card</span>
+            <Input type="text" placeholder="Enter amount" className="mt-2" onChange={handleCardChange} />
+          </div>
+          <div>
+            <span className="text-muted-foreground">Mpesa</span>
+            <Input type="text" placeholder="Enter amount" className="mt-2" onChange={handleMpesaChange} />
+          </div>
           </div>
         </div>
       </CardContent>

@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback,useContext } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import Select from 'react-select';
+import { SaleContext } from '@/context/SalesContext';
 import {
     Card,
     CardContent,
@@ -31,7 +32,6 @@ import {
 
 import { debounce } from 'lodash';
 import { Value } from '@radix-ui/react-select';
-import {useSale} from '@/context/SalesContext';
 interface Country {
     alpha2Code: string;
     name: string;
@@ -52,10 +52,16 @@ type SaleAddProps = {
 
 
 export default function SaleAdd({ className }: SaleAddProps) {
-    const { addSaleItem, setCustomer } = useSale();
     const [countryCodes, setCountryCodes] = useState<SelectOption[]>([]);
     const [selectedOption, setSelectedOption] = useState<SelectOption | null>(null);
     const [phoneNumber, setPhoneNumber] = useState<string>('');
+    const saleContext = useContext(SaleContext);
+
+    if (!saleContext) {
+        throw new Error('SaleAdd must be used within a SaleProvider');
+    }
+
+    const { addSaleItem,removeSaleItem,updateSaleItem,setCustomer,clearSale,finalizeSale } = saleContext;
 
     useEffect(() => {
         axios.get('https://restcountries.com/v2/all')
@@ -85,13 +91,18 @@ export default function SaleAdd({ className }: SaleAddProps) {
     const [items, setItems] = useState<any[]>([]);
 
     const addItem = (type: string) => {
-        setItems([...items, { id: uuidv4(), type, service: '', staff: '', quantity: 1, price: 0, discount: 0, total: 0 }]);
-    
+    const newItem = { id: uuidv4(), type, service: '', staff: '', quantity: 1, price: 0, discount: 0, total: 0 };
+    setItems([...items, newItem]);
+    addSaleItem(newItem);
     };
 
     const removeItem = (id: string) => {
         setItems(items.filter(item => item.id !== id));
+
+        // Remove the item from the context
+        removeSaleItem(id);
     };
+
 
     //Services 
     const [services, setServices] = useState<any[]>([]);
@@ -130,16 +141,42 @@ const serviceOptions = services.reduce((acc, service) => {
 const [selectedService, setSelectedService] = useState<SelectOption | null>(null);
 
 const calculateTotal = (price: number, discount: number, quantity: number) => {
-    return (price - (price * (discount / 100))) * quantity;
+    return ((price - (price * (discount / 100))) * quantity);
 };
 
 const handleServiceChange = (selectedService: SelectOption | null, itemId: string) => {
     setSelectedService(selectedService);
 
     // Update the price in the items array
-    setItems(prevItems => prevItems.map(item => 
-        item.id === itemId ? { ...item, price: selectedService?.price || 0, total: calculateTotal(selectedService?.price || 0, item.discount, item.quantity) } : item
-    ));
+    setItems(prevItems => {
+        const updatedItems = prevItems.map(item => 
+            item.id === itemId ? { ...item, price: selectedService?.price || 0, quantity: 1, total: calculateTotal(selectedService?.price || 0, item.discount, 1) } : item
+        );
+
+        // Update the item in the SaleDetails context
+        const updatedItem = updatedItems.find(item => item.id === itemId);
+        if (updatedItem) {
+            updateSaleItem(itemId, updatedItem);
+        }
+
+        return updatedItems;
+    });
+
+    // Update the item in the context
+    if (selectedService) {
+        const item = items.find(item => item.id === itemId);
+        if (item) {
+            addSaleItem({
+                id: itemId,
+                type: 'service', // replace with the actual type
+                serviceId: selectedService.value,
+                price: selectedService.price,
+                quantity: 1, // set the quantity to 1
+                discount: item.discount, // use the actual discount
+                total: calculateTotal(selectedService.price, item.discount, 1), // calculate the total with the actual discount and a quantity of 1
+            });
+        }
+    }
 };
 
 const handleDiscountChange = (event: React.ChangeEvent<HTMLInputElement>, itemId: string) => {
@@ -147,6 +184,12 @@ const handleDiscountChange = (event: React.ChangeEvent<HTMLInputElement>, itemId
     setItems(prevItems => prevItems.map(item => 
         item.id === itemId ? { ...item, discount, total: calculateTotal(item.price, discount, item.quantity) } : item
     ));
+
+    // Update the item in the context
+    const item = items.find(item => item.id === itemId);
+    if (item) {
+        updateSaleItem(itemId, { ...item, discount, total: calculateTotal(item.price, discount, item.quantity) });
+    }
 };
 
 const handleQuantityChange = (event: React.ChangeEvent<HTMLInputElement>, itemId: string) => {
@@ -154,6 +197,12 @@ const handleQuantityChange = (event: React.ChangeEvent<HTMLInputElement>, itemId
     setItems(prevItems => prevItems.map(item => 
         item.id === itemId ? { ...item, quantity, total: calculateTotal(item.price, item.discount, quantity) } : item
     ));
+
+    // Update the item in the context
+    const item = items.find(item => item.id === itemId);
+    if (item) {
+        updateSaleItem(itemId, { ...item, quantity, total: calculateTotal(item.price, item.discount, quantity) });
+    }
 };
 
 
