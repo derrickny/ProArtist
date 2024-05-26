@@ -72,7 +72,9 @@ export default function Component({ className }: checkout){
       throw new Error("Component must be used within a SaleProvider");
     }
 
-    const { saleDetails } = context;
+    
+   // the context object is now available to use here as per the salesContext.tsx file
+    const { saleDetails,clearSale ,addSaleItem, removeSaleItem, updateSaleItem, setCustomer, finalizeSale } = context;
     const total = saleDetails.total;
 
 const handleAddTip = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -90,10 +92,19 @@ const handleCheckout = (event: React.MouseEvent<HTMLButtonElement>) => {
   // Add your checkout logic here
 };
 
+
 const handleReset = (event: React.MouseEvent<HTMLButtonElement>) => {
   console.log('Reset');
-  // Add your reset logic here
+  // Reset all state variables
+  setMpesaPayment(0);
+  setCardPayment(0);
+  setPayableAmount(total);
+  setMpesaInputValue("");
+  setCardInputValue("");
+  clearSale();
 };
+
+
 const [mpesaPayment, setMpesaPayment] = useState(0);
 const [cardPayment, setCardPayment] = useState(0);
 const [payableAmount, setPayableAmount] = useState(total);
