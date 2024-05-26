@@ -1,5 +1,5 @@
 'use client';
-import React, { useContext,useEffect,useState } from 'react';
+import React, { useContext,useEffect,useState ,useRef} from 'react';
 import {
 SearchIcon
 }
@@ -94,7 +94,6 @@ const handleReset = (event: React.MouseEvent<HTMLButtonElement>) => {
   console.log('Reset');
   // Add your reset logic here
 };
-
 const [mpesaPayment, setMpesaPayment] = useState(0);
 const [cardPayment, setCardPayment] = useState(0);
 const [payableAmount, setPayableAmount] = useState(total);
@@ -102,13 +101,32 @@ const [payableAmount, setPayableAmount] = useState(total);
 useEffect(() => {
   setPayableAmount(total - mpesaPayment - cardPayment);
 }, [total, mpesaPayment, cardPayment]);
+const mpesaPaymentRef = useRef(0);
+const cardPaymentRef = useRef(0);
+
+const [mpesaInputValue, setMpesaInputValue] = useState("");
+const [cardInputValue, setCardInputValue] = useState("");
 
 const handleMpesaChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-  setMpesaPayment(Number(event.target.value));
+  let newMpesaPayment = Number(event.target.value);
+  if (newMpesaPayment + cardPaymentRef.current > total) {
+    newMpesaPayment = total - cardPaymentRef.current;
+    alert("Hello there,The total payments cannot exceed the total bill. The Mpesa payment has been adjusted to the remaining bill amount.");
+  }
+  mpesaPaymentRef.current = newMpesaPayment;
+  setMpesaPayment(newMpesaPayment);
+  setMpesaInputValue(newMpesaPayment.toString()); // Update input value
 };
 
 const handleCardChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-  setCardPayment(Number(event.target.value));
+  let newCardPayment = Number(event.target.value);
+  if (newCardPayment + mpesaPaymentRef.current > total) {
+    newCardPayment = total - mpesaPaymentRef.current;
+    alert("Hello there,The total payments cannot exceed the total bill. The card payment has been adjusted to the remaining bill amount.");
+  }
+  cardPaymentRef.current = newCardPayment;
+  setCardPayment(newCardPayment);
+  setCardInputValue(newCardPayment.toString()); // Update input value
 };
 
   return (
@@ -188,11 +206,11 @@ const handleCardChange = (event: React.ChangeEvent<HTMLInputElement>) => {
           <div className="flex gap-3">
           <div>
             <span className="text-muted-foreground">Card</span>
-            <Input type="text" placeholder="Enter amount" className="mt-2" onChange={handleCardChange} />
+            <Input type="text" placeholder="Enter amount" className="mt-2" value={cardInputValue} onChange={handleCardChange}  />
           </div>
           <div>
             <span className="text-muted-foreground">Mpesa</span>
-            <Input type="text" placeholder="Enter amount" className="mt-2" onChange={handleMpesaChange} />
+            <Input type="text" placeholder="Enter amount" className="mt-2" value={mpesaInputValue} onChange={handleMpesaChange}  />
           </div>
           </div>
         </div>

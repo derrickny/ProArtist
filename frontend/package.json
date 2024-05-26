@@ -33,6 +33,7 @@
     "react-native-country-codes-picker": "^2.3.5",
     "react-phone-number-input": "^3.4.1",
     "react-select": "^5.8.0",
+    "sweetalert2": "^11.11.0",
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^9.0.1"
