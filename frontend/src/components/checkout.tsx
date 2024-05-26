@@ -102,6 +102,11 @@ const handleReset = (event: React.MouseEvent<HTMLButtonElement>) => {
   setMpesaInputValue("");
   setCardInputValue("");
   clearSale();
+
+  // Remove all items from the sale
+  saleDetails.items.forEach((item: any) => { // replace 'any' with the actual type of the item
+    removeSaleItem(item.id);
+  });
 };
 
 
