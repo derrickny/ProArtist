@@ -76,13 +76,24 @@ WSGI_APPLICATION = 'proartist_backend.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': 'proartist',
+#         'USER': 'postgres',  # replace with your actual username if different
+#         'PASSWORD': 'nyagaderrick!',  # replace with your actual password
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#     }
+# }
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'proartist',
-        'USER': 'postgres',  # replace with your actual username if different
-        'PASSWORD': 'nyagaderrick!',  # replace with your actual password
-        'HOST': 'localhost',
+        'NAME': 'posgres',
+        'USER': 'postgres.fhxvunehsrrwacyagebh',
+        'PASSWORD': '6897Ed29n@ESqVM',
+        'HOST': 'aws-0-eu-central-1.pooler.supabase.com',
         'PORT': '5432',
     }
 }
