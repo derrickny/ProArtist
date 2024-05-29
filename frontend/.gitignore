@@ -43,4 +43,5 @@ next-env.d.ts
 #ignore the .env file
 /Users/nyagaderrick/Developer/ProArtist/backend/.env
 
-
+#vscode 
+/Users/nyagaderrick/Developer/ProArtist/.vscode
