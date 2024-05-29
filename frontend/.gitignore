@@ -45,3 +45,7 @@ next-env.d.ts
 
 #vscode 
 /Users/nyagaderrick/Developer/ProArtist/.vscode
+
+.vscode/
+backend/.env
+backend/myenv/
