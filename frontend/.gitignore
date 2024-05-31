@@ -35,5 +35,17 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-#virtual env
-/.myvenv
+
+# #virtual env
+# /Users/nyagaderrick/Developer/ProArtist/backend/myenv
+
+
+# #ignore the .env file
+# /Users/nyagaderrick/Developer/ProArtist/backend/.env
+
+# #vscode 
+# /Users/nyagaderrick/Developer/ProArtist/.vscode
+
+.vscode/
+backend/.env
+backend/myenv/
