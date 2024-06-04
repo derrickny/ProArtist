@@ -1,7 +1,8 @@
 # serializers.py
 from rest_framework import serializers
-from .models import Services, User, Customer, SaleItem, Products, Sale, Location
-
+from django.utils import timezone
+from .models import *
+from django.utils.dateparse import parse_datetime
 class ServiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Services
@@ -48,3 +49,36 @@ class LocationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Location
         fields = ['id', 'name', 'address']
+        
+
+
+
+class AppointmentSerializer(serializers.ModelSerializer):
+    customer_name = serializers.SerializerMethodField()
+    user_name = serializers.SerializerMethodField()
+    location_name = serializers.SerializerMethodField()
+    service_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Appointments
+        fields = ['id', 'customer_name', 'user_name', 'location_name', 'service_name', 'date_time', 'status']
+
+    def get_customer_name(self, obj):
+        return f"{obj.customer.first_name} {obj.customer.last_name}"
+
+    def get_user_name(self, obj):
+        return f"{obj.user.first_name.upper()}"
+    
+    def get_location_name(self, obj):
+        return f"{obj.location.name.upper()}"
+    
+    def get_service_name(self, obj):
+        return f"{obj.service.name.upper()}"
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        date_time = parse_datetime(representation['date_time'])
+        representation['date'] = date_time.date().isoformat()
+        representation['time'] = date_time.time().strftime('%H:%M')
+        del representation['date_time']
+        return representation

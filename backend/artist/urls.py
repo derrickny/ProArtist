@@ -1,7 +1,7 @@
 # urls.py
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import ServiceList, StaffList, CustomerSearch, SaleViewSet, ProductViewSet, LocationViewSet
+from .views import *
 
 router = DefaultRouter()
 router.register(r'sales', SaleViewSet, basename='sales')
@@ -12,5 +12,6 @@ urlpatterns = [
     path('customers/', CustomerSearch.as_view()),
     path('products/', ProductViewSet.as_view()),
     path('locations/', LocationViewSet.as_view()),
+    path('appointments/', AppointmentView.as_view()),
     path('', include(router.urls)),
 ]

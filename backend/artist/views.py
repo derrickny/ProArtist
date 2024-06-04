@@ -2,7 +2,7 @@
 
 from rest_framework import generics, viewsets,status
 from .models import Services, User, Customer, Sale, Products, Location
-from .serializers import ServiceSerializer, StaffSerializer, CustomerSerializer, SaleSerializer,ProductSerializer,LocationSerializer
+from .serializers import *
 from django.db.models import Q
 from django.contrib.postgres.search import SearchVector
 from rest_framework.response import Response
@@ -78,3 +78,7 @@ class LocationViewSet(generics.ListAPIView):
         if name is not None:
             queryset = queryset.filter(name__iexact=name)
         return queryset
+    
+class AppointmentView(generics.ListCreateAPIView):
+    queryset = Appointments.objects.all()
+    serializer_class = AppointmentSerializer
