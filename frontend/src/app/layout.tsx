@@ -8,6 +8,7 @@ import "./globals.css";
 import { cn } from "../lib/utils";
 import SideNavbar from "@/components/SideNavbar";
 import { SaleProvider } from "@/context/SalesContext";
+import 'react-big-calendar/lib/css/react-big-calendar.css';
 
 const inter = Inter({ subsets: ["latin"] });
 

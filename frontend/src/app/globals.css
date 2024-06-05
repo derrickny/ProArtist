@@ -114,4 +114,7 @@
       --ring: 35.5 91.7% 32.9%;
     }
   }
-  
+
+  .rbc-timeslot-group {
+    height: 3em; /* Adjust this value to increase or decrease the space between time slots */
+  }

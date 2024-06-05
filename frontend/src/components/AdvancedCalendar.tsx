@@ -1,57 +1,59 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { Calendar as BigCalendar, momentLocalizer, View } from 'react-big-calendar';
 import moment from 'moment';
-import Calendar from '@/components/calender';  // Ensure the path is correct
+import 'react-big-calendar/lib/css/react-big-calendar.css';
+import EventComponent from '@/components/events';
+import Toolbar from '@/components/toolbar';
 
-// Type definitions
-export type APIAppointment = {
-  id: number;
-  customer_name: string;
-  user_name: string;
-  location_name: string;
-  service_name: string;
-  status: string;
-  date: string;
-  time: string;
-};
 
-type CalendarEvent = {
-  id: number;
-  title: string;
-  start: Date;
-  end: Date;
-  status: string;
-};
+const localizer = momentLocalizer(moment);
 
-type Props = {
-  events: APIAppointment[];
-};
+const AdvancedCalendar: React.FC = () => {
+  const [events, setEvents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [viewDate, setViewDate] = useState(new Date());
+  const [currentView, setCurrentView] = useState<View>('day'); // Initialize the view state as 'week'
 
-// Component for displaying events in a calendar
-const AdvancedCalendar: React.FC<Props> = ({ events }) => {
-  const appointments: CalendarEvent[] = events.map(event => ({
-    id: event.id,
-    title: `${event.customer_name} - ${event.service_name}`,
-    start: new Date(moment(`${event.date} ${event.time}`).format('YYYY-MM-DD HH:mm:ss')),
-    end: new Date(moment(`${event.date} ${event.time}`).add(1, 'hour').format('YYYY-MM-DD HH:mm:ss')),  // Assuming 1 hour duration
-    status: event.status,
-  }));
+  useEffect(() => {
+    fetch('http://127.0.0.1:8000/appointments')
+      .then(response => response.json())
+      .then(data => {
+        const mappedEvents = data.map((event: any) => ({
+          ...event,
+          start: new Date(`${event.date}T${event.time}`),
+          end: new Date(new Date(`${event.date}T${event.time}`).getTime() + 60 * 60 * 1000),
+        }));
+        setEvents(mappedEvents);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('Failed to fetch appointments:', error);
+        setError('Failed to load appointments.');
+        setLoading(false);
+      });
+  }, []);
 
-  // Custom components for displaying events based on their status
-  const components = {
-    event: (props: any) => {
-      const { status, title } = props.event;
-      switch (status) {
-        case "Scheduled":
-          return <div style={{ background: "yellow", color: "white", height: "100%" }}>{title}</div>;
-        case "Completed":
-          return <div style={{ background: "lightgreen", color: "white", height: "100%" }}>{title}</div>;
-        default:
-          return null;
-      }
-    },
-  };
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
 
-  return <Calendar events={appointments} components={components} />;
+  return (
+    <BigCalendar
+      localizer={localizer}
+      events={events}
+      startAccessor="start"
+      endAccessor="end"
+      style={{ height: '750px' }}
+      view={currentView}
+      onView={setCurrentView}
+      components={{
+        event: EventComponent,
+        toolbar: props => <Toolbar {...props} viewDate={viewDate} onView={setCurrentView} />
+      }}
+      onNavigate={date => setViewDate(date)}
+      defaultDate={new Date()}
+    />
+  );
 };
 
 export default AdvancedCalendar;
