@@ -11,7 +11,7 @@ class ServiceSerializer(serializers.ModelSerializer):
 class StaffSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id','first_name', 'last_name']
+        fields = ['id','first_name', 'last_name','role']
 
 class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
