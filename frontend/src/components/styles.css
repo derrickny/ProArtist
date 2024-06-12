@@ -1,0 +1,10 @@
+/* styles.css */
+.rbc-allday-cell {
+    display: none;
+}
+
+
+
+.rbc-timeslot-group {
+    margin-bottom: 50px; /* Adjust this value to increase/decrease the space */
+}

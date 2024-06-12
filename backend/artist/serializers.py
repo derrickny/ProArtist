@@ -61,7 +61,10 @@ class AppointmentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Appointments
-        fields = ['id', 'customer_name', 'user_name', 'location_name', 'service_name', 'date_time', 'status']
+        fields = ['id', 'customer_name', 'user_name','user_id' ,'location_name', 'service_name', 'date_time', 'status']
+
+    def get_user_id(self, obj):
+        return obj.user.id
 
     def get_customer_name(self, obj):
         return f"{obj.customer.first_name} {obj.customer.last_name}"
