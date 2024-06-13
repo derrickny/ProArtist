@@ -58,11 +58,17 @@ class AppointmentSerializer(serializers.ModelSerializer):
     user_name = serializers.SerializerMethodField()
     location_name = serializers.SerializerMethodField()
     service_name = serializers.SerializerMethodField()
+    service_duration = serializers.SerializerMethodField()
 
     class Meta:
         model = Appointments
-        fields = ['id', 'customer_name', 'user_name','user_id' ,'location_name', 'service_name', 'date_time', 'status']
-
+        fields = ['id', 'customer_name', 'user_name','user_id' ,'location_name', 'service_name', 'service_duration','date_time', 'status']
+    
+    
+    
+    def get_service_duration(self, obj):
+        return obj.service.duration
+    
     def get_user_id(self, obj):
         return obj.user.id
 

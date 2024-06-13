@@ -8,3 +8,51 @@
 .rbc-timeslot-group {
     margin-bottom: 50px; /* Adjust this value to increase/decrease the space */
 }
+
+
+
+
+.rbc-time-view {
+    border-radius: 15px;
+    overflow: hidden; /* Add this line */
+}
+
+.rbc-event-label {
+    display: none;
+}
+
+.rbc-event {
+    background-color: #f0f7ff; /* Default background color */
+}
+
+.rbc-event--Scheduled {
+    background-color: #ff7f7f;
+}
+
+.rbc-event--Completed {
+    background-color: #ff7f7f;
+}
+
+.rbc-event--Cancelled {
+    background-color: #7fff7f;
+}
+
+.rbc-event--NoShow {
+    background-color: #7f7fff;
+}
+
+.rbc-event--NewInAppBooking {
+    background-color: #ff7fff;
+}
+
+.rbc-event--NewOnlineBooking {
+    background-color: #ffff7f;
+}
+
+.rbc-event--Arrived {
+    background-color: #7fffff;
+}
+
+.rbc-event--Started {
+    background-color: #ff7f7f;
+}
