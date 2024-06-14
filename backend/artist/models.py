@@ -83,15 +83,27 @@ class SaleItem(models.Model):
         self.total_price = self.sub_total
         super().save(*args, **kwargs)
 
+from django.db import models
+
 class Appointments(models.Model):
-    STATUS_CHOICES = [('Scheduled', 'Scheduled'), ('Completed', 'Completed'), ('Cancelled', 'Cancelled'), ('No Show', 'No Show')]
+    STATUS_CHOICES = [
+        ('Scheduled', 'Scheduled'), 
+        ('Completed', 'Completed'), 
+        ('Cancelled', 'Cancelled'), 
+        ('No Show', 'No Show'),
+        ('New In-App Booking', 'New In-App Booking'),  # New status
+        ('New Online Booking', 'New Online Booking'),  # New status
+        ('Arrived', 'Arrived'),  # New status
+        ('Started', 'Started'),  # New status
+    ]
+
     customer = models.ForeignKey('Customer', on_delete=models.CASCADE)
     user = models.ForeignKey('User', on_delete=models.SET_NULL, null=True)
     service = models.ForeignKey('Services', on_delete=models.CASCADE)
     location = models.ForeignKey('Location', on_delete=models.CASCADE)
     date_time = models.DateTimeField()
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES)
-    remarks = models.TextField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES)  # Increased max_length to 20
+    remarks = models.TextField(null=True)
 
 class ResourceCredits(models.Model):
     TYPE_CHOICES = [('SMS', 'SMS'), ('WhatsApp', 'WhatsApp')]

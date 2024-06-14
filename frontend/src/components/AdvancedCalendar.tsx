@@ -13,6 +13,11 @@ import '@/components/styles.css';
 
 const localizer = momentLocalizer(moment);
 
+interface SelectOption {
+  value: number | 'all';
+  label: string;
+}
+
 interface CalendarProps {
   localizer: DateLocalizer;
   events: any[];
@@ -42,12 +47,17 @@ const AdvancedCalendar: React.FC = () => {
   const [error, setError] = useState('');
   const [viewDate, setViewDate] = useState(new Date());
   const [currentView, setCurrentView] = useState<View>('day');
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedOption, setSelectedOption] = useState<SelectOption[]>([]);
 
   useEffect(() => {
     fetch('http://127.0.0.1:8000/staff')
       .then(response => response.json())
       .then(staffData => {
-        setStaffMembers(staffData);
+        const allStaffOption = { value: 'all', label: 'All Staff' };
+        const options = staffData.map((staff: any) => ({ value: staff.id, label: staff.first_name }));
+        setStaffMembers([allStaffOption, ...options]);
+        setSelectedOption([allStaffOption, ...options]); // Set all staff as selected by default
       });
 
     fetch('http://127.0.0.1:8000/appointments')
@@ -69,6 +79,10 @@ const AdvancedCalendar: React.FC = () => {
       });
   }, []);
 
+  const handleChange = (option: SelectOption[]) => {
+    setSelectedOption(option);
+  };
+
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
 
@@ -82,23 +96,38 @@ const AdvancedCalendar: React.FC = () => {
       dayHeader: EmptyDayHeader,
       resourceHeader: CustomHeader,
       event: EventComponent,
-      toolbar: (props: any) => <Toolbar {...props} onView={setCurrentView} viewDate={viewDate} />
+      toolbar: (props: any) => (
+        <Toolbar 
+          {...props} 
+          onView={setCurrentView} 
+          viewDate={viewDate} 
+          setCurrentDate={setCurrentDate} 
+          selectedOption={selectedOption} 
+          options={staffMembers} 
+          handleChange={handleChange} 
+        />
+      )
     },
-    onNavigate: (date: Date) => setViewDate(date),
-    defaultDate: new Date(),
+    onNavigate: (date: Date) => {
+      setViewDate(date);
+      setCurrentView('day');
+      setCurrentDate(date);
+    },
+    defaultDate: currentDate, // Use currentDate state as the defaultDate
     onView: (view: View) => setCurrentView(view),
     view: currentView,
     titleAccessor: () => ""
   };
 
   // Conditionally add resources for 'day' view only
-  if (currentView === 'day') {
-    calendarProps.resources = staffMembers;
-    calendarProps.resourceIdAccessor = "id";
-    calendarProps.resourceTitleAccessor = "first_name";
-  }
+// Conditionally add resources for 'day' view only
+if (currentView === 'day') {
+  calendarProps.resources = staffMembers.filter(member => member.value !== 'all');
+  calendarProps.resourceIdAccessor = "value"; // Use "value" instead of "id"
+  calendarProps.resourceTitleAccessor = "label"; // Use "label" instead of "first_name"
+}
 
-  return <BigCalendar {...calendarProps} />;
+  return <BigCalendar key={currentDate.toString()} {...calendarProps} />;
 };
 
 export default AdvancedCalendar;

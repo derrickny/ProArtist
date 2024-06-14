@@ -21,38 +21,34 @@
     display: none;
 }
 
+/* styles.css */
 .rbc-event {
-    background-color: #f0f7ff; /* Default background color */
+    border: none !important; /* Ensure there's no border */
+    border-radius: 5px; /* Rounded corners */
+    overflow: hidden; /* Ensures content does not bleed outside the border */
+    padding: 0; /* Remove padding here and manage it inside the content if needed */
 }
 
-.rbc-event--Scheduled {
-    background-color: #ff7f7f;
-}
-
-.rbc-event--Completed {
-    background-color: #ff7f7f;
-}
-
-.rbc-event--Cancelled {
-    background-color: #7fff7f;
-}
-
-.rbc-event--NoShow {
-    background-color: #7f7fff;
-}
-
-.rbc-event--NewInAppBooking {
-    background-color: #ff7fff;
-}
-
-.rbc-event--NewOnlineBooking {
-    background-color: #ffff7f;
-}
-
-.rbc-event--Arrived {
-    background-color: #7fffff;
-}
-
+/* Apply background colors directly to the event classes */
+.rbc-event--Scheduled,
+.rbc-event--Completed,
+.rbc-event--Cancelled,
+.rbc-event--NoShow,
+.rbc-event--NewInAppBooking,
+.rbc-event--NewOnlineBooking,
+.rbc-event--Arrived,
 .rbc-event--Started {
-    background-color: #ff7f7f;
+    border-radius: 5px; /* Rounded corners for status-specific events */
+    font-size: 0.8em; /* Smaller text size */
+    color: #333; /* Text color */
 }
+
+/* Specific background colors */
+.rbc-event--Scheduled { background-color: #f0f7ff !important; }
+.rbc-event--Completed { background-color: #ff7f7f !important; }
+.rbc-event--Cancelled { background-color: #7fff7f !important; }
+.rbc-event--NoShow { background-color: #7f7fff !important; }
+.rbc-event--NewInAppBooking { background-color: #ff7fff !important; }
+.rbc-event--NewOnlineBooking { background-color: #ffff7f !important; }
+.rbc-event--Arrived { background-color: #7fffff !important; }
+.rbc-event--Started { background-color: #ff7f7f !important; }
