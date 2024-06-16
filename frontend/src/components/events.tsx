@@ -13,10 +13,13 @@ type APIAppointment = {
   time: string;
   start: Date;
   end: Date;
+  service_duration: number;
 };
 
 const EventComponent: React.FC<EventProps<APIAppointment>> = ({ event }) => {
 const statusClass = `rbc-event--${event.status.replace(/\s+/g, '')}`;  // Remove spaces from status
+const end = moment(event.start).add(event.service_duration, 'minutes');
+
 
   return (
     <div className={`rbc-event rbc-event--${event.status}`} style={{
@@ -28,9 +31,16 @@ const statusClass = `rbc-event--${event.status.replace(/\s+/g, '')}`;  // Remove
       fontSize: '0.8em',  // Smaller text size
       textAlign: 'left'  // Text aligned to the left
     }}>
-      <div style={{ marginBottom: '5px' }}>{moment(event.start).format('h:mm A')} - {moment(event.end).format('h:mm A')}</div>
-      <div style={{ marginBottom: '5px', fontWeight: 'bold' }}>{event.customer_name}</div>
-      <div style={{ marginBottom: '5px' }}>{event.service_name} ({moment(event.end).diff(moment(event.start), 'minutes')} mins)</div>
+      {/* Display start time, calculated end time, and service duration */}
+      <div style={{ marginBottom: '5px' }}>
+        {moment(event.start).format('h:mm A')} - {end.format('h:mm A')}
+      </div>
+      <div style={{ marginBottom: '5px', fontWeight: 'bold' }}>
+        {event.customer_name}
+      </div>
+      <div style={{ marginBottom: '5px' }}>
+        {event.service_name} ({event.service_duration} mins)
+      </div>
     </div>
   );
 };

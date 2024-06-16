@@ -18,6 +18,11 @@ interface SelectOption {
   label: string;
 }
 
+interface StaffMember {
+  id: number;
+  first_name: string;
+}
+
 interface CalendarProps {
   localizer: DateLocalizer;
   events: any[];
@@ -58,6 +63,11 @@ const AdvancedCalendar: React.FC = () => {
         const options = staffData.map((staff: any) => ({ value: staff.id, label: staff.first_name }));
         setStaffMembers([allStaffOption, ...options]);
         setSelectedOption([allStaffOption, ...options]); // Set all staff as selected by default
+      })
+      .catch(error => {
+        console.error('Failed to fetch staff:', error);
+        setError('Failed to load staff.');
+        setLoading(false);
       });
 
     fetch('http://127.0.0.1:8000/appointments')
