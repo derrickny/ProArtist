@@ -52,3 +52,26 @@
 .rbc-event--NewOnlineBooking { background-color: #ffff7f !important; }
 .rbc-event--Arrived { background-color: #7fffff !important; }
 .rbc-event--Started { background-color: #ff7f7f !important; }
+
+
+
+.centered-input {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 10; /* Adjust z-index as needed */
+}
+
+.drawer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 300px; /* Adjust based on your desired width */
+    height: 100%;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+}
+
+.drawer.open {
+    transform: translateX(0);
+}
