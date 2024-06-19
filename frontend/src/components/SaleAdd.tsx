@@ -122,19 +122,27 @@ useEffect(() => {
 }, []); // Log the services array
 
 const serviceOptions = services.reduce((acc, service) => {
-    if (!acc.find((group: { label: string }) => group.label === service.description)) {
-        acc.push({
-            label: service.description,
-            options: services.filter(s => s.description === service.description).map(s => ({
-                value: s.id,
-                label: s.name,
-                price: s.price
-            }))
-        });
-    }
-    return acc;
-}, [] as Array<{ label: string, options: SelectOption[] }>);
+    // Define the type for the group within the accumulator
+    type GroupType = { label: string; options: Array<{ value: string; label: string; price: number }> };
 
+    // Find an existing group by the service's description
+    let group = acc.find((group: GroupType) => group.label === service.description);
+
+    // If the group doesn't exist, create it and add to the accumulator
+    if (!group) {
+        group = { label: service.description, options: [] };
+        acc.push(group);
+    }
+
+    // Add the current service as an option to the found or newly created group
+    group.options.push({
+        value: service.id,
+        label: service.name,
+        price: service.price
+    });
+
+    return acc;
+}, [] as Array<{ label: string, options: Array<{ value: string, label: string, price: number }> }>);
 //console.log('Service options:', serviceOptions); // Log the serviceOptions array
 
 

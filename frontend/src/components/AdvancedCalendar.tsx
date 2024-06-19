@@ -1,13 +1,12 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Calendar as BigCalendar, momentLocalizer, View, EventProps, DateLocalizer } from 'react-big-calendar';
+import { Calendar as BigCalendar, momentLocalizer, View, EventProps, DateLocalizer, ResourceHeaderProps } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import EventComponent from '@/components/events';
 import Toolbar from '@/components/toolbar';
 import CustomHeader from '@/components/CustomHeader';
-import { ResourceHeaderProps } from 'react-big-calendar';
 import EmptyDayHeader from '@/components/EmptyHeader';
 import '@/components/styles.css';
 
@@ -18,11 +17,6 @@ interface SelectOption {
   label: string;
 }
 
-interface StaffMember {
-  id: number;
-  first_name: string;
-}
-
 interface CalendarProps {
   localizer: DateLocalizer;
   events: any[];
@@ -31,7 +25,7 @@ interface CalendarProps {
   style: { height: string };
   components: {
     dayHeader: React.FC;
-    resourceHeader: React.FC<ResourceHeaderProps<any>>;
+    resourceHeader: React.FC<ResourceHeaderProps>; // Corrected the type here
     event: React.FC<EventProps<any>>;
     toolbar: (props: any) => JSX.Element;
   };
@@ -54,21 +48,23 @@ const AdvancedCalendar: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>('day');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedOption, setSelectedOption] = useState<SelectOption[]>([]);
-
+  const [appliedSelection, setAppliedSelection] = useState<SelectOption[]>([]); //
+  
   useEffect(() => {
     fetch('http://127.0.0.1:8000/staff')
       .then(response => response.json())
       .then(staffData => {
-        const allStaffOption = { value: 'all', label: 'All Staff' };
         const options = staffData.map((staff: any) => ({ value: staff.id, label: staff.first_name }));
-        setStaffMembers([allStaffOption, ...options]);
-        setSelectedOption([allStaffOption, ...options]); // Set all staff as selected by default
+        setStaffMembers([...options]);
+        setSelectedOption([...options]); // Initialize with all options
+        setAppliedSelection([...options]); // Initialize appliedSelection with all options as well
       })
       .catch(error => {
         console.error('Failed to fetch staff:', error);
         setError('Failed to load staff.');
         setLoading(false);
       });
+  
 
     fetch('http://127.0.0.1:8000/appointments')
       .then(response => response.json())
@@ -89,9 +85,18 @@ const AdvancedCalendar: React.FC = () => {
       });
   }, []);
 
-  const handleChange = (option: SelectOption[]) => {
-    setSelectedOption(option);
+  const handleChange = (selectedOptions: SelectOption[]) => {
+    setSelectedOption(selectedOptions);
   };
+
+  // Updated handleApply function to filter staff members based on selectedOption
+  // and update the calendar's resources accordingly
+const handleApply = () => {
+  const selectedStaffIds = selectedOption.map(option => option.value);
+  const filteredStaffMembers = staffMembers.filter(member => 
+    selectedStaffIds.includes(member.value));
+  setAppliedSelection(filteredStaffMembers);
+};
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
@@ -104,7 +109,7 @@ const AdvancedCalendar: React.FC = () => {
     style: { height: '750px' },
     components: {
       dayHeader: EmptyDayHeader,
-      resourceHeader: CustomHeader,
+      resourceHeader: CustomHeader, // No change needed here, assuming CustomHeader is correctly typed
       event: EventComponent,
       toolbar: (props: any) => (
         <Toolbar 
@@ -114,28 +119,29 @@ const AdvancedCalendar: React.FC = () => {
           setCurrentDate={setCurrentDate} 
           selectedOption={selectedOption} 
           options={staffMembers} 
-          handleChange={handleChange} 
+          handleChange={handleChange} // Now correctly references the handleChange function
+          onApply={handleApply} 
         />
-      )
+      ),
     },
     onNavigate: (date: Date) => {
       setViewDate(date);
       setCurrentView('day');
       setCurrentDate(date);
     },
-    defaultDate: currentDate, // Use currentDate state as the defaultDate
+    defaultDate: currentDate,
     onView: (view: View) => setCurrentView(view),
     view: currentView,
     titleAccessor: () => ""
   };
 
-  // Conditionally add resources for 'day' view only
-// Conditionally add resources for 'day' view only
-if (currentView === 'day') {
-  calendarProps.resources = staffMembers.filter(member => member.value !== 'all');
-  calendarProps.resourceIdAccessor = "value"; // Use "value" instead of "id"
-  calendarProps.resourceTitleAccessor = "label"; // Use "label" instead of "first_name"
-}
+  if (currentView === 'day') {
+    calendarProps.resources = staffMembers.filter(member => selectedOption.map(option => option.value).includes(member.value));
+    // Ensure "All Staff" is not included in the resources
+    // This assumes "All Staff" is not in staffMembers anymore, so no explicit check is needed here
+    calendarProps.resourceIdAccessor = "value";
+    calendarProps.resourceTitleAccessor = "label";
+  }
 
   return <BigCalendar key={currentDate.toString()} {...calendarProps} />;
 };

@@ -158,5 +158,6 @@ CORS_ORIGIN_ALLOW_ALL = False
 CORS_ORIGIN_WHITELIST = [
     "http://localhost:3000",
     "http://localhost:3001",
-    "https://pro-artist-rho.vercel.app",  # Removed trailing slash
+    "https://pro-artist-rho.vercel.app", 
+    "http://localhost:5173",# Removed trailing slash
 ]
