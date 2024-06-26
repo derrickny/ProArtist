@@ -8,6 +8,7 @@ import axios, { CancelTokenSource } from 'axios';
 import debounce from 'lodash/debounce';
 import { Input } from "@/components/ui/input";
 import AddCustomer from '@/components/AddCustomer';
+import AppointmentForm from '@/components/AppointmentForm';
 
 interface CustomToolbarProps extends ToolbarProps {
   onView: (view: View) => void;
@@ -24,6 +25,7 @@ const AppointmentPopup = ({ onClose }: { onClose: () => void }) => {
   const [searchCompleted, setSearchCompleted] = useState(false);
   const [customerExists, setCustomerExists] = useState(false);
   const [showAddCustomerDrawer, setShowAddCustomerDrawer] = useState(false);
+  const [showAppointmentForm, setShowAppointmentForm] = useState(false);
 
   const axiosInstance = axios.create();
   let cancelTokenSource: CancelTokenSource | undefined;
@@ -121,44 +123,50 @@ const AppointmentPopup = ({ onClose }: { onClose: () => void }) => {
     return null;
   };
 
-  return (
-    <div style={{
-      position: 'fixed',
-      top: '50%',
-      left: '50%',
-      width: '800px',
-      height: '500px',
-      transform: 'translate(-50%, -50%)',
-      backgroundColor: 'white',
-      padding: '20px',
-      zIndex: 1000,
-      borderRadius: '10px',
-      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-    }}>
-      <h2>Add Appointment</h2>
-      <div className="relative w-80">
-        <Input
-          id="searchTerm"
-          value={searchTerm}
-          onChange={handleSearchTermChange}
-          onKeyPress={(event) => {
-            if (event.key === 'Enter') {
-              searchCustomer();
-            }
-          }}
-          placeholder="Search by phone number/name/id"
-          className="pr-20"
-        />
-        <Button onClick={searchCustomer} className="absolute right-2 top-1/2 transform -translate-y-1/2 px-2 py-1 h-8">Search</Button>
-        <div className="absolute w-full mt-1">
-          {renderSearchResults()}
-        </div>
-      </div>
-      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
-        <Button onClick={onClose}>Close</Button>
+
+  const toggleAppointmentForm = () => {
+    setShowAppointmentForm(!showAppointmentForm);
+  };
+
+return (
+  <div style={{
+    position: 'fixed',
+    top: '50%',
+    left: '50%',
+    width: '800px',
+    height: '500px',
+    transform: 'translate(-50%, -50%)',
+    backgroundColor: 'white',
+    padding: '20px',
+    zIndex: 1000,
+    borderRadius: '10px',
+    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+  }}>
+    <h2>Add Appointment</h2>
+    <div className="relative w-80">
+      <Input
+        id="searchTerm"
+        value={searchTerm}
+        onChange={handleSearchTermChange}
+        onKeyPress={(event) => {
+          if (event.key === 'Enter') {
+            searchCustomer();
+          }
+        }}
+        placeholder="Search by phone number/name/id"
+        className="pr-20"
+      />
+      <Button onClick={searchCustomer} className="absolute right-2 top-1/2 transform -translate-y-1/2 px-2 py-1 h-8">Search</Button>
+      <div className="absolute w-full mt-1">
+        {renderSearchResults()}
       </div>
     </div>
-  );
+    <AppointmentForm />
+    <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+      <Button onClick={onClose}>Close</Button>
+    </div>
+  </div>
+);
 };
 
 const Toolbar: React.FC<CustomToolbarProps> = ({ onView, setCurrentDate, onApply, staffMembers }) => {

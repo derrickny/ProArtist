@@ -83,7 +83,6 @@ class SaleItem(models.Model):
         self.total_price = self.sub_total
         super().save(*args, **kwargs)
 
-from django.db import models
 
 class Appointments(models.Model):
     STATUS_CHOICES = [

@@ -47,10 +47,10 @@ class CustomerSearch(generics.ListCreateAPIView):
         last_name = data.get('last_name').strip().upper() if data.get('last_name') else None
         mobile = data.get('mobile').strip()
         location_id = data.get('location')
-
+        email = data.get('email').strip().lower() if data.get('email') else None 
         location = get_object_or_404(Location, id=location_id)
 
-        customer = Customer.objects.create(first_name=first_name, last_name=last_name, mobile=mobile, location=location)
+        customer = Customer.objects.create(first_name=first_name, last_name=last_name, mobile=mobile, email=email,location=location)
         return Response(self.get_serializer(customer).data, status=status.HTTP_201_CREATED)
     
 

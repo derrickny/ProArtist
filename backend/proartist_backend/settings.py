@@ -14,6 +14,7 @@ from pathlib import Path
 # Add these at the top of your settings.py
 from os import getenv
 from dotenv import load_dotenv
+import os 
 
 load_dotenv()
 
@@ -49,6 +50,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware'
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -161,3 +163,10 @@ CORS_ORIGIN_WHITELIST = [
     "https://pro-artist-rho.vercel.app", 
     "http://localhost:5173",# Removed trailing slash
 ]
+
+
+
+#heroku settings
+# Static files settings for Heroku
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_URL = '/static/'
