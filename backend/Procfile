@@ -1,1 +1,1 @@
-gunicorn proartist_backend.wsgi --log-file -
+web: gunicorn backend.wsgi --workers 2 --log-file -
