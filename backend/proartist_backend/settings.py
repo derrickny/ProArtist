@@ -46,11 +46,12 @@ INSTALLED_APPS = [
     'rest_framework',
     'artist',
     'corsheaders',
+    'whitenoise',
 ]
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware'
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -157,11 +158,15 @@ AUTH_USER_MODEL = 'artist.User'
 
 # CORS settings
 CORS_ORIGIN_ALLOW_ALL = False
+
 CORS_ORIGIN_WHITELIST = [
     "http://localhost:3000",
     "http://localhost:3001",
     "https://pro-artist-rho.vercel.app", 
-    "http://localhost:5173",# Removed trailing slash
+    "http://localhost:5173",
+    "https://bookings-teal.vercel.app",
+     "https://proartist-f6c2dfe5c27a.herokuapp.com"
+    # Add any other domains that need to access your API here
 ]
 
 
