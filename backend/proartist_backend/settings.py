@@ -31,7 +31,13 @@ SECRET_KEY = 'django-insecure-pf%zf=)p(2j%2ewgubgg0o2)u*w(06yo*h#2%y^xlv877!$x%#
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    "pro-artist-rho.vercel.app",
+    "bookings-teal.vercel.app",
+    "proartist-f6c2dfe5c27a.herokuapp.com",
+]
 
 
 # Application definition
